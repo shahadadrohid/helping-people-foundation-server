@@ -11,12 +11,29 @@ app.use(express.json())
 
 
 
-const uri = `mongodb+srv://${proccess.env.DB_USER}:${proccess.env.DB_PASS}@cluster0.ztnz7id.mongodb.net/?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ztnz7id.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 async function run() {
     try {
         await client.connect();
+        const activitiesCollection = client.db('peoplefoundation').collection('activities');
+
+        app.get('/activities', async (req, res) => {
+            const query = {};
+            const cursor = activitiesCollection.find(query);
+            console.log(cursor)
+            const activities = await cursor.toArray();
+            console.log(activities)
+            res.send(activities);
+        })
+
+        app.post('/activities', async (req, res) => {
+            const newActivity = req.body;
+            console.log(newActivity)
+            const result = await activitiesCollection.insertOne(newActivity);
+            res.send(result)
+        })
 
     }
     finally {
